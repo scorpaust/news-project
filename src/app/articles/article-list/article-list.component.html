@@ -1,0 +1,13 @@
+<mat-accordion multi="true" *ngIf="articles.length > 0">
+  <mat-expansion-panel *ngFor="let article of articles">
+    <mat-expansion-panel-header>{{ article.title }}</mat-expansion-panel-header>
+    <p>{{ article.content }}</p>
+    <mat-action-row>
+      <button mat-button color="accent">EDIT</button>
+      <button mat-button color="warn">DELETE</button>
+    </mat-action-row>
+  </mat-expansion-panel>
+</mat-accordion>
+<p class="info-text mat-body-1" *ngIf="articles.length <= 0">
+  No articles added yet!
+</p>

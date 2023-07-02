@@ -1,0 +1,70 @@
+<mat-card>
+  <form (submit)="onAddArticle(articleForm)" #articleForm="ngForm">
+    <mat-form-field>
+      <mat-label>Title</mat-label>
+      <input
+        matInput
+        type="text"
+        name="title"
+        ngModel
+        #title="ngModel"
+        placeholder="Article Title"
+        required
+        minlength="10"
+      />
+      <mat-error *ngIf="title.invalid"
+        >Please, enter an article title with at least 10 characters.</mat-error
+      >
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Subtitle</mat-label>
+      <input
+        matInput
+        type="text"
+        name="subtitle"
+        ngModel
+        #subtitle="ngModel"
+        placeholder="Article Subtitle"
+        required
+        minlength="20"
+      />
+      <mat-error *ngIf="subtitle.invalid"
+        >Please, enter an article subtitle with at least 20
+        characters.</mat-error
+      >
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Image</mat-label>
+      <input
+        matInput
+        type="text"
+        name="image"
+        ngModel
+        #image="ngModel"
+        placeholder="Article Image"
+        required
+      />
+      <mat-error *ngIf="image.invalid"
+        >Please, enter an article image.</mat-error
+      >
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Content</mat-label>
+      <textarea
+        matInput
+        rows="6"
+        name="content"
+        ngModel
+        #content="ngModel"
+        placeholder="Article Content"
+        required
+      ></textarea>
+      <mat-error *ngIf="content.invalid"
+        >Please, enter an article content.</mat-error
+      >
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">
+      Save Article
+    </button>
+  </form>
+</mat-card>

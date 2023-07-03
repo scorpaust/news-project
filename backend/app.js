@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const Article = require("./models/article");
+require("dotenv").config();
 
 const app = express();
 
@@ -9,9 +10,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 mongoose
-  .connect(
-    "mongodb+srv://scorpaust:QsajMjMKgXwbVPX9@cluster0.1lf4jdl.mongodb.net/news-project?retryWrites=true&w=majority"
-  )
+  .connect("")
   .then(() => {
     console.log("Connected to the database!");
   })

@@ -12,14 +12,15 @@ export class ArticleCreateComponent {
   constructor(public articlesService: ArticlesService) {}
 
   newArticle = {
+    id: '',
     title: '',
     subtitle: '',
     content: '',
     image: '',
-    author: '',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
+  id = '';
   content = '';
   title = '';
   subtitle = '';
@@ -34,11 +35,11 @@ export class ArticleCreateComponent {
     }
 
     this.newArticle = {
+      id: '',
       title: form.value.title,
       subtitle: form.value.subtitle,
       content: form.value.content,
       image: form.value.image,
-      author: form.value.author,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -46,11 +47,11 @@ export class ArticleCreateComponent {
     const article: Article = this.newArticle;
 
     this.articlesService.addArticle(
+      article.id,
       article.title,
       article.subtitle,
       article.content,
-      article.image,
-      article.author
+      article.image
     );
 
     form.resetForm();

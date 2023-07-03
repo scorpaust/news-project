@@ -42,8 +42,14 @@ app.post("/api/articles", (req, res, next) => {
     createdAt: new Date(),
     updatedAt: new Date(),
   });
-  article.save();
-  res.status(201).json({ message: "Article added successfully!" });
+  article.save().then((createdArticle) => {
+    res
+      .status(201)
+      .json({
+        message: "Article added successfully!",
+        articleId: createdArticle._id,
+      });
+  });
 });
 
 app.get("/api/articles", async (req, res, next) => {
@@ -53,6 +59,13 @@ app.get("/api/articles", async (req, res, next) => {
       message: "Articles fetched successfully!",
       articles: documents,
     });
+  });
+});
+
+app.delete("/api/articles/:id", (req, res, next) => {
+  Article.deleteOne({ _id: req.params.id }).then((result) => {
+    console.log(result);
+    res.status(200).json({ message: "Article deleted!" });
   });
 });
 

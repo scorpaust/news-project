@@ -28,4 +28,8 @@ export class ArticleListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.articlesSub.unsubscribe();
   }
+
+  OnDelete(articleId: string) {
+    this.articlesService.deleteArticle(articleId);
+  }
 }

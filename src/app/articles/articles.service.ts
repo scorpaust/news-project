@@ -42,30 +42,47 @@ export class ArticlesService {
   }
 
   addArticle(
+    id: string,
     title: string,
     subtitle: string,
     content: string,
-    image: string,
-    author: string
+    image: string
   ) {
     const article: Article = {
+      id,
       title,
       subtitle,
       content,
       image,
-      author,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     this.http
-      .post<{ message: string }>('http://localhost:3000/api/articles', article)
+      .post<{ message: string; articleId: string }>(
+        'http://localhost:3000/api/articles',
+        article
+      )
       .subscribe((responseData) => {
+        const id = responseData.articleId;
+        article.id = id as string;
         console.log(responseData.message);
       });
 
     this.articles.push(article);
 
     this.articlesUpdated.next([...this.articles]);
+  }
+
+  deleteArticle(articleId: string) {
+    this.http
+      .delete('http://localhost:3000/api/articles/' + articleId)
+      .subscribe(() => {
+        const updatedArticles = this.articles.filter(
+          (article) => article.id !== articleId
+        );
+        this.articles = updatedArticles;
+        this.articlesUpdated.next([...this.articles]);
+      });
   }
 }

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { map, Subject } from 'rxjs';
 import { Article } from './article.model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class ArticlesService {
-  private articles: Article[] = [];
+  private articles: any[] = [];
 
   private articlesUpdated = new Subject<Article[]>();
 
@@ -13,11 +13,26 @@ export class ArticlesService {
 
   getArticles() {
     this.http
-      .get<{ message: string; articles: Article[] }>(
+      .get<{ message: string; articles: any }>(
         'http://localhost:3000/api/articles'
       )
-      .subscribe((articleData) => {
-        this.articles = articleData.articles;
+      .pipe(
+        map((articleData) => {
+          return articleData.articles.map((article) => {
+            return {
+              id: article._id,
+              title: article.title,
+              subtitle: article.subtitle,
+              content: article.content,
+              image: article.image,
+              createdAt: article.createdAt,
+              updatedAt: article.updatedAt,
+            };
+          });
+        })
+      )
+      .subscribe((transformedArticles) => {
+        this.articles = transformedArticles;
         this.articlesUpdated.next([...this.articles]);
       });
   }

@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Article } from '../article.model';
 import { ArticlesService } from '../articles.service';
 
@@ -8,8 +9,11 @@ import { ArticlesService } from '../articles.service';
   selector: 'app-article-create',
   styleUrls: ['./article-create.component.css'],
 })
-export class ArticleCreateComponent {
-  constructor(public articlesService: ArticlesService) {}
+export class ArticleCreateComponent implements OnInit {
+  constructor(
+    public articlesService: ArticlesService,
+    public route: ActivatedRoute
+  ) {}
 
   newArticle = {
     id: '',
@@ -29,31 +33,79 @@ export class ArticleCreateComponent {
   createdAt = new Date();
   updatedAt = new Date();
 
-  onAddArticle(form: NgForm) {
+  private mode = 'create';
+  private articleId: string;
+  article: Article;
+  isLoading: boolean = false;
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe((paramMap: ParamMap) => {
+      if (paramMap.has('articleId')) {
+        this.mode = 'edit';
+        this.articleId = paramMap.get('articleId');
+        this.isLoading = true;
+        this.articlesService
+          .getArticle(this.articleId)
+          .subscribe((articleData) => {
+            this.isLoading = false;
+            this.article = {
+              id: articleData._id,
+              title: articleData.title,
+              subtitle: articleData.subtitle,
+              content: articleData.content,
+              image: articleData.image,
+              createdAt: articleData.createdAt,
+              updatedAt: articleData.updatedAt,
+            };
+          });
+      } else {
+        this.mode = 'create';
+        this.articleId = null;
+      }
+    });
+  }
+
+  onSaveArticle(form: NgForm) {
     if (form.invalid) {
       return;
     }
 
-    this.newArticle = {
-      id: '',
-      title: form.value.title,
-      subtitle: form.value.subtitle,
-      content: form.value.content,
-      image: form.value.image,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    this.isLoading = true;
 
-    const article: Article = this.newArticle;
+    if (this.mode == 'create') {
+      this.newArticle = {
+        id: '',
+        title: form.value.title,
+        subtitle: form.value.subtitle,
+        content: form.value.content,
+        image: form.value.image,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-    this.articlesService.addArticle(
-      article.id,
-      article.title,
-      article.subtitle,
-      article.content,
-      article.image
-    );
+      const article: Article = this.newArticle;
 
-    form.resetForm();
+      this.articlesService.addArticle(
+        article.id,
+        article.title,
+        article.subtitle,
+        article.content,
+        article.image
+      );
+
+      form.resetForm();
+    } else {
+      this.articlesService.updateArticle(
+        this.articleId,
+        form.value.title,
+        form.value.subtitle,
+        form.value.content,
+        form.value.image,
+        this.article.createdAt,
+        this.article.updatedAt
+      );
+
+      form.resetForm();
+    }
   }
 }

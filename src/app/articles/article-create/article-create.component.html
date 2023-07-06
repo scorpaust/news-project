@@ -1,12 +1,17 @@
 <mat-card>
-  <form (submit)="onAddArticle(articleForm)" #articleForm="ngForm">
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <form
+    (submit)="onSaveArticle(articleForm)"
+    #articleForm="ngForm"
+    *ngIf="!isLoading"
+  >
     <mat-form-field>
       <mat-label>Title</mat-label>
       <input
         matInput
         type="text"
         name="title"
-        ngModel
+        [ngModel]="article?.title"
         #title="ngModel"
         placeholder="Article Title"
         required
@@ -22,7 +27,7 @@
         matInput
         type="text"
         name="subtitle"
-        ngModel
+        [ngModel]="article?.subtitle"
         #subtitle="ngModel"
         placeholder="Article Subtitle"
         required
@@ -39,7 +44,7 @@
         matInput
         type="text"
         name="image"
-        ngModel
+        [ngModel]="article?.image"
         #image="ngModel"
         placeholder="Article Image"
         required
@@ -54,7 +59,7 @@
         matInput
         rows="6"
         name="content"
-        ngModel
+        [ngModel]="article?.content"
         #content="ngModel"
         placeholder="Article Content"
         required

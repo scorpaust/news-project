@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, Subject } from 'rxjs';
 import { Article } from './article.model';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class ArticlesService {
@@ -9,7 +10,7 @@ export class ArticlesService {
 
   private articlesUpdated = new Subject<Article[]>();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   getArticles() {
     this.http
@@ -67,11 +68,60 @@ export class ArticlesService {
         const id = responseData.articleId;
         article.id = id as string;
         console.log(responseData.message);
+        this.articles.push(article);
+        this.articlesUpdated.next([...this.articles]);
+        this.router.navigate(['/']);
       });
+  }
 
-    this.articles.push(article);
+  getArticle(id: string) {
+    return this.http.get<{
+      _id: string;
+      title: string;
+      subtitle: string;
+      content: string;
+      image: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>('http://localhost:3000/api/articles/' + id);
+  }
 
-    this.articlesUpdated.next([...this.articles]);
+  updateArticle(
+    id: string,
+    title: string,
+    subtitle: string,
+    content: string,
+    image: string,
+    createdAt: Date,
+    updatedAt: Date
+  ) {
+    const article: Article = {
+      id: id,
+      title: title,
+      subtitle: subtitle,
+      content: content,
+      image: image,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    };
+
+    this.http
+      .put('http://localhost:3000/api/articles/' + id, article)
+      .subscribe((response) => {
+        const updatedArticles = [...this.articles];
+
+        const oldArticleIndex = updatedArticles.findIndex(
+          (a) => a.id === article.id
+        );
+
+        updatedArticles[oldArticleIndex] = article;
+
+        this.articles = updatedArticles;
+
+        this.articlesUpdated.next([...this.articles]);
+
+        this.router.navigate(['/']);
+      });
   }
 
   deleteArticle(articleId: string) {

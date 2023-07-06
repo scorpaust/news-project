@@ -6,6 +6,7 @@ import { ArticleListComponent } from './articles/article-list/article-list.compo
 const routes: Routes = [
   { path: '', component: ArticleListComponent },
   { path: 'create', component: ArticleCreateComponent },
+  { path: 'edit/:articleId', component: ArticleCreateComponent },
 ];
 
 @NgModule({

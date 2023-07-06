@@ -15,12 +15,17 @@ export class ArticleListComponent implements OnInit, OnDestroy {
 
   constructor(public articlesService: ArticlesService) {}
 
+  isLoading: boolean = false;
+
   ngOnInit(): void {
+    this.isLoading = true;
+
     this.articlesService.getArticles();
 
     this.articlesSub = this.articlesService
       .getArticleUpdateListener()
       .subscribe((articles: Article[]) => {
+        this.isLoading = false;
         this.articles = articles;
       });
   }

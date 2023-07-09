@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Article } from '../article.model';
 import { ArticlesService } from '../articles.service';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-article-list',
@@ -17,17 +18,28 @@ export class ArticleListComponent implements OnInit, OnDestroy {
 
   isLoading: boolean = false;
 
+  totalArticles = 0;
+
+  articlesPerPage = 2;
+
+  currentPage = 1;
+
+  pageSizeOptions = [1, 2, 5, 10];
+
   ngOnInit(): void {
     this.isLoading = true;
 
-    this.articlesService.getArticles();
+    this.articlesService.getArticles(this.articlesPerPage, 1);
 
     this.articlesSub = this.articlesService
       .getArticleUpdateListener()
-      .subscribe((articles: Article[]) => {
-        this.isLoading = false;
-        this.articles = articles;
-      });
+      .subscribe(
+        (articleData: { articles: Article[]; articleCount: number }) => {
+          this.isLoading = false;
+          this.articles = articleData.articles;
+          this.totalArticles = articleData.articleCount;
+        }
+      );
   }
 
   ngOnDestroy(): void {
@@ -35,6 +47,16 @@ export class ArticleListComponent implements OnInit, OnDestroy {
   }
 
   OnDelete(articleId: string) {
-    this.articlesService.deleteArticle(articleId);
+    this.isLoading = true;
+    this.articlesService.deleteArticle(articleId).subscribe(() => {
+      this.articlesService.getArticles(this.articlesPerPage, this.currentPage);
+    });
+  }
+
+  onChangedPage(pageData: PageEvent) {
+    this.isLoading = true;
+    this.currentPage = pageData.pageIndex + 1;
+    this.articlesPerPage = pageData.pageSize;
+    this.articlesService.getArticles(this.articlesPerPage, this.currentPage);
   }
 }

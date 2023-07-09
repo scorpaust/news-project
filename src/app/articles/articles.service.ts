@@ -8,33 +8,43 @@ import { Router } from '@angular/router';
 export class ArticlesService {
   private articles: any[] = [];
 
-  private articlesUpdated = new Subject<Article[]>();
+  private articlesUpdated = new Subject<{
+    articles: Article[];
+    articleCount: number;
+  }>();
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  getArticles() {
+  getArticles(articlesPerPage: Number, currentPage: Number) {
+    const queryParams = `?pagesize=${articlesPerPage}&page=${currentPage}`;
     this.http
-      .get<{ message: string; articles: any }>(
-        'http://localhost:3000/api/articles'
+      .get<{ message: string; articles: any; maxArticles: number }>(
+        'http://localhost:3000/api/articles' + queryParams
       )
       .pipe(
         map((articleData) => {
-          return articleData.articles.map((article) => {
-            return {
-              id: article._id,
-              title: article.title,
-              subtitle: article.subtitle,
-              content: article.content,
-              imagePath: article.imagePath,
-              createdAt: article.createdAt,
-              updatedAt: article.updatedAt,
-            };
-          });
+          return {
+            articles: articleData.articles.map((article) => {
+              return {
+                id: article._id,
+                title: article.title,
+                subtitle: article.subtitle,
+                content: article.content,
+                imagePath: article.imagePath,
+                createdAt: article.createdAt,
+                updatedAt: article.updatedAt,
+              };
+            }),
+            maxArticles: articleData.maxArticles,
+          };
         })
       )
-      .subscribe((transformedArticles) => {
-        this.articles = transformedArticles;
-        this.articlesUpdated.next([...this.articles]);
+      .subscribe((transformedArticleData) => {
+        this.articles = transformedArticleData.articles;
+        this.articlesUpdated.next({
+          articles: [...this.articles],
+          articleCount: transformedArticleData.maxArticles,
+        });
       });
   }
 
@@ -55,17 +65,6 @@ export class ArticlesService {
         articleData
       )
       .subscribe((responseData) => {
-        const article: any = {
-          id: responseData.article.id,
-          title: title,
-          subtitle: subtitle,
-          content: content,
-          imagePath: responseData.article.imagePath,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        this.articles.push(article);
-        this.articlesUpdated.next([...this.articles]);
         this.router.navigate(['/']);
       });
   }
@@ -114,39 +113,11 @@ export class ArticlesService {
     this.http
       .put('http://localhost:3000/api/articles/' + id, articleData)
       .subscribe((response) => {
-        const updatedArticles = [...this.articles];
-
-        const oldArticleIndex = updatedArticles.findIndex((a) => a.id === id);
-
-        const article: Article = {
-          id: id,
-          title: title,
-          subtitle,
-          content,
-          imagePath: '',
-          createdAt,
-          updatedAt: new Date(),
-        };
-
-        updatedArticles[oldArticleIndex] = article;
-
-        this.articles = updatedArticles;
-
-        this.articlesUpdated.next([...this.articles]);
-
         this.router.navigate(['/']);
       });
   }
 
   deleteArticle(articleId: string) {
-    this.http
-      .delete('http://localhost:3000/api/articles/' + articleId)
-      .subscribe(() => {
-        const updatedArticles = this.articles.filter(
-          (article) => article.id !== articleId
-        );
-        this.articles = updatedArticles;
-        this.articlesUpdated.next([...this.articles]);
-      });
+    return this.http.delete('http://localhost:3000/api/articles/' + articleId);
   }
 }

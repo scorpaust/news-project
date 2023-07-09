@@ -76,11 +76,21 @@ router.put(
 );
 
 router.get("", async (req, res, next) => {
-  Article.find().then((documents) => {
-    console.log(documents);
-    res.json({
-      message: "Articles fetched successfully!",
-      articles: documents,
+  const pageSize = +req.query.pagesize;
+  const currentPage = +req.query.page;
+  const articleQuery = Article.find();
+  let fetchedArticles = undefined;
+  if (pageSize && currentPage) {
+    articleQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
+  }
+  articleQuery.then((documents) => {
+    fetchedArticles = documents;
+    return Article.count().then((count) => {
+      res.json({
+        message: "Articles fetched successfully!",
+        articles: fetchedArticles,
+        maxArticles: count,
+      });
     });
   });
 });

@@ -1,8 +1,9 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Article } from '../article.model';
 import { ArticlesService } from '../articles.service';
+import { mimeType } from './mime-type.validator';
 
 @Component({
   templateUrl: './article-create.component.html',
@@ -10,35 +11,36 @@ import { ArticlesService } from '../articles.service';
   styleUrls: ['./article-create.component.css'],
 })
 export class ArticleCreateComponent implements OnInit {
+  enteredTitle = '';
+  enteredContent = '';
+  article: Article;
+  isLoading = false;
+  form: FormGroup;
+  imagePreview: string;
+  private mode = 'create';
+  private articleId: string;
+
   constructor(
     public articlesService: ArticlesService,
     public route: ActivatedRoute
   ) {}
 
-  newArticle = {
-    id: '',
-    title: '',
-    subtitle: '',
-    content: '',
-    image: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  id = '';
-  content = '';
-  title = '';
-  subtitle = '';
-  image = '';
-  author = '';
-  createdAt = new Date();
-  updatedAt = new Date();
-
-  private mode = 'create';
-  private articleId: string;
-  article: Article;
-  isLoading: boolean = false;
-
   ngOnInit(): void {
+    this.form = new FormGroup({
+      title: new FormControl(null, {
+        validators: [Validators.required, Validators.minLength(10)],
+      }),
+      subtitle: new FormControl(null, {
+        validators: [Validators.required, Validators.minLength(20)],
+      }),
+      content: new FormControl(null, {
+        validators: [Validators.required],
+      }),
+      image: new FormControl(null, {
+        validators: [Validators.required],
+        asyncValidators: [mimeType],
+      }),
+    });
     this.route.paramMap.subscribe((paramMap: ParamMap) => {
       if (paramMap.has('articleId')) {
         this.mode = 'edit';
@@ -53,10 +55,16 @@ export class ArticleCreateComponent implements OnInit {
               title: articleData.title,
               subtitle: articleData.subtitle,
               content: articleData.content,
-              image: articleData.image,
+              imagePath: articleData.imagePath,
               createdAt: articleData.createdAt,
               updatedAt: articleData.updatedAt,
             };
+            this.form.setValue({
+              title: this.article.title,
+              subtitle: this.article.subtitle,
+              content: this.article.content,
+              image: this.article.imagePath,
+            });
           });
       } else {
         this.mode = 'create';
@@ -65,47 +73,45 @@ export class ArticleCreateComponent implements OnInit {
     });
   }
 
-  onSaveArticle(form: NgForm) {
-    if (form.invalid) {
+  onSaveArticle() {
+    if (this.form.invalid) {
       return;
     }
 
     this.isLoading = true;
 
     if (this.mode == 'create') {
-      this.newArticle = {
-        id: '',
-        title: form.value.title,
-        subtitle: form.value.subtitle,
-        content: form.value.content,
-        image: form.value.image,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const article: Article = this.newArticle;
-
       this.articlesService.addArticle(
-        article.id,
-        article.title,
-        article.subtitle,
-        article.content,
-        article.image
+        this.form.value.title,
+        this.form.value.subtitle,
+        this.form.value.content,
+        this.form.value.image
       );
-
-      form.resetForm();
     } else {
       this.articlesService.updateArticle(
         this.articleId,
-        form.value.title,
-        form.value.subtitle,
-        form.value.content,
-        form.value.image,
+        this.form.value.title,
+        this.form.value.subtitle,
+        this.form.value.content,
+        this.form.value.image,
         this.article.createdAt,
-        this.article.updatedAt
+        new Date()
       );
 
-      form.resetForm();
+      this.form.reset();
     }
+  }
+
+  onImagePicked(event: Event) {
+    const file = (event.target as HTMLInputElement).files[0];
+    this.form.patchValue({
+      image: file,
+    });
+    this.form.get('image').updateValueAndValidity();
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 }

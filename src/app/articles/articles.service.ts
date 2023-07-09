@@ -25,7 +25,7 @@ export class ArticlesService {
               title: article.title,
               subtitle: article.subtitle,
               content: article.content,
-              image: article.image,
+              imagePath: article.imagePath,
               createdAt: article.createdAt,
               updatedAt: article.updatedAt,
             };
@@ -42,32 +42,28 @@ export class ArticlesService {
     return this.articlesUpdated.asObservable();
   }
 
-  addArticle(
-    id: string,
-    title: string,
-    subtitle: string,
-    content: string,
-    image: string
-  ) {
-    const article: Article = {
-      id,
-      title,
-      subtitle,
-      content,
-      image,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  addArticle(title: string, subtitle: string, content: string, image: File) {
+    const articleData = new FormData();
+    articleData.append('title', title);
+    articleData.append('subtitle', subtitle);
+    articleData.append('content', content);
+    articleData.append('image', image, title);
 
     this.http
-      .post<{ message: string; articleId: string }>(
+      .post<{ message: string; article: Article }>(
         'http://localhost:3000/api/articles',
-        article
+        articleData
       )
       .subscribe((responseData) => {
-        const id = responseData.articleId;
-        article.id = id as string;
-        console.log(responseData.message);
+        const article: any = {
+          id: responseData.article.id,
+          title: title,
+          subtitle: subtitle,
+          content: content,
+          imagePath: responseData.article.imagePath,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
         this.articles.push(article);
         this.articlesUpdated.next([...this.articles]);
         this.router.navigate(['/']);
@@ -80,7 +76,7 @@ export class ArticlesService {
       title: string;
       subtitle: string;
       content: string;
-      image: string;
+      imagePath: string;
       createdAt: Date;
       updatedAt: Date;
     }>('http://localhost:3000/api/articles/' + id);
@@ -91,28 +87,46 @@ export class ArticlesService {
     title: string,
     subtitle: string,
     content: string,
-    image: string,
+    image: File | string,
     createdAt: Date,
     updatedAt: Date
   ) {
-    const article: Article = {
-      id: id,
-      title: title,
-      subtitle: subtitle,
-      content: content,
-      image: image,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    };
+    let articleData: Article | FormData;
+    if (typeof image == 'object') {
+      articleData = new FormData();
+      articleData.append('id', id);
+      articleData.append('title', title);
+      articleData.append('subtitle', subtitle);
+      articleData.append('content', content);
+      articleData.append('image', image, title);
+    } else {
+      articleData = {
+        id: id,
+        title: title,
+        subtitle,
+        content,
+        imagePath: image,
+        createdAt,
+        updatedAt: new Date(),
+      };
+    }
 
     this.http
-      .put('http://localhost:3000/api/articles/' + id, article)
+      .put('http://localhost:3000/api/articles/' + id, articleData)
       .subscribe((response) => {
         const updatedArticles = [...this.articles];
 
-        const oldArticleIndex = updatedArticles.findIndex(
-          (a) => a.id === article.id
-        );
+        const oldArticleIndex = updatedArticles.findIndex((a) => a.id === id);
+
+        const article: Article = {
+          id: id,
+          title: title,
+          subtitle,
+          content,
+          imagePath: '',
+          createdAt,
+          updatedAt: new Date(),
+        };
 
         updatedArticles[oldArticleIndex] = article;
 

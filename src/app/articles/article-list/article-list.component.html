@@ -2,6 +2,9 @@
 <mat-accordion multi="true" *ngIf="articles.length > 0 && !isLoading">
   <mat-expansion-panel *ngFor="let article of articles">
     <mat-expansion-panel-header>{{ article.title }}</mat-expansion-panel-header>
+    <div class="article-image">
+      <img [src]="article.imagePath" [alt]="article.title" />
+    </div>
     <p>{{ article.content }}</p>
     <mat-action-row>
       <a mat-button color="accent" [routerLink]="['/edit', article.id]">EDIT</a>

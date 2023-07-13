@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { Article } from '../article.model';
 import { ArticlesService } from '../articles.service';
 import { PageEvent } from '@angular/material/paginator';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   selector: 'app-article-list',
@@ -14,7 +15,12 @@ export class ArticleListComponent implements OnInit, OnDestroy {
 
   private articlesSub: Subscription;
 
-  constructor(public articlesService: ArticlesService) {}
+  private authStatusSub: Subscription;
+
+  constructor(
+    public articlesService: ArticlesService,
+    private authService: AuthService
+  ) {}
 
   isLoading: boolean = false;
 
@@ -25,6 +31,8 @@ export class ArticleListComponent implements OnInit, OnDestroy {
   currentPage = 1;
 
   pageSizeOptions = [1, 2, 5, 10];
+
+  userIsAuthenticated = false;
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -40,10 +48,20 @@ export class ArticleListComponent implements OnInit, OnDestroy {
           this.totalArticles = articleData.articleCount;
         }
       );
+
+    this.userIsAuthenticated = this.authService.getIsAuth();
+
+    this.authStatusSub = this.authService
+      .getAuthStatusListener()
+      .subscribe((isAuthenticated) => {
+        this.userIsAuthenticated = isAuthenticated;
+      });
   }
 
   ngOnDestroy(): void {
     this.articlesSub.unsubscribe();
+
+    this.authStatusSub.unsubscribe();
   }
 
   OnDelete(articleId: string) {

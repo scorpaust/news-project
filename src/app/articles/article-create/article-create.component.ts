@@ -56,6 +56,7 @@ export class ArticleCreateComponent implements OnInit {
               subtitle: articleData.subtitle,
               content: articleData.content,
               imagePath: articleData.imagePath,
+              creator: articleData.creator,
               createdAt: articleData.createdAt,
               updatedAt: articleData.updatedAt,
             };

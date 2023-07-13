@@ -31,6 +31,7 @@ export class ArticlesService {
                 subtitle: article.subtitle,
                 content: article.content,
                 imagePath: article.imagePath,
+                creator: article.creator,
                 createdAt: article.createdAt,
                 updatedAt: article.updatedAt,
               };
@@ -76,6 +77,7 @@ export class ArticlesService {
       subtitle: string;
       content: string;
       imagePath: string;
+      creator: string;
       createdAt: Date;
       updatedAt: Date;
     }>('http://localhost:3000/api/articles/' + id);
@@ -105,6 +107,7 @@ export class ArticlesService {
         subtitle,
         content,
         imagePath: image,
+        creator: null,
         createdAt,
         updatedAt: new Date(),
       };

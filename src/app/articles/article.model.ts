@@ -4,6 +4,7 @@ export interface Article {
   subtitle: string;
   content: string;
   imagePath: File | string;
+  creator: string;
   createdAt: Date;
   updatedAt: Date;
 }

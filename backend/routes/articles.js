@@ -37,6 +37,7 @@ router.post(
       subtitle: req.body.subtitle,
       content: req.body.content,
       imagePath: url + "/images/" + req.file.filename,
+      creator: req.userData.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -68,12 +69,19 @@ router.put(
       subtitle: req.body.subtitle,
       content: req.body.content,
       imagePath: imagePath,
+      creator: req.userData.userId,
       createdAt: req.body.createdAt,
       updatedAt: new Date(),
     });
-    Article.updateOne({ _id: req.params.id }, article).then((result) => {
-      console.log(result);
-      res.status(200).json({ message: "Update successfull!" });
+    Article.updateOne(
+      { _id: req.params.id, creator: req.userData.userId },
+      article
+    ).then((result) => {
+      if (result.modifiedCount > 0) {
+        res.status(200).json({ message: "Update successfull!" });
+      } else {
+        res.status(401).json({ message: "Not Authorized!" });
+      }
     });
   }
 );
@@ -109,10 +117,16 @@ router.get("/:id", (req, res, next) => {
 });
 
 router.delete("/:id", checkAuth, (req, res, next) => {
-  Article.deleteOne({ _id: req.params.id }).then((result) => {
-    console.log(result);
-    res.status(200).json({ message: "Article deleted!" });
-  });
+  Article.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(
+    (result) => {
+      console.log(result);
+      if (result.deletedCount > 0) {
+        res.status(200).json({ message: "Article Deleted!" });
+      } else {
+        res.status(401).json({ message: "Not Authorized!" });
+      }
+    }
+  );
 });
 
 module.exports = router;

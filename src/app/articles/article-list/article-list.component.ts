@@ -34,10 +34,14 @@ export class ArticleListComponent implements OnInit, OnDestroy {
 
   userIsAuthenticated = false;
 
+  userId: string;
+
   ngOnInit(): void {
     this.isLoading = true;
 
     this.articlesService.getArticles(this.articlesPerPage, 1);
+
+    this.userId = this.authService.getUserId();
 
     this.articlesSub = this.articlesService
       .getArticleUpdateListener()
@@ -55,6 +59,7 @@ export class ArticleListComponent implements OnInit, OnDestroy {
       .getAuthStatusListener()
       .subscribe((isAuthenticated) => {
         this.userIsAuthenticated = isAuthenticated;
+        this.userId = this.authService.getUserId();
       });
   }
 

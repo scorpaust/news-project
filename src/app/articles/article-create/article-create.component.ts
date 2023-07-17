@@ -1,16 +1,24 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Article } from '../article.model';
 import { ArticlesService } from '../articles.service';
 import { mimeType } from './mime-type.validator';
+import { Subscription } from 'rxjs';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   templateUrl: './article-create.component.html',
   selector: 'app-article-create',
   styleUrls: ['./article-create.component.css'],
 })
-export class ArticleCreateComponent implements OnInit {
+export class ArticleCreateComponent implements OnInit, OnDestroy {
   enteredTitle = '';
   enteredContent = '';
   article: Article;
@@ -19,13 +27,20 @@ export class ArticleCreateComponent implements OnInit {
   imagePreview: string;
   private mode = 'create';
   private articleId: string;
+  private authStatusSub: Subscription;
 
   constructor(
     public articlesService: ArticlesService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.authStatusSub = this.authService
+      .getAuthStatusListener()
+      .subscribe((authStatus) => {
+        this.isLoading = false;
+      });
     this.form = new FormGroup({
       title: new FormControl(null, {
         validators: [Validators.required, Validators.minLength(10)],
@@ -114,5 +129,9 @@ export class ArticleCreateComponent implements OnInit {
       this.imagePreview = reader.result as string;
     };
     reader.readAsDataURL(file);
+  }
+
+  ngOnDestroy(): void {
+    this.authStatusSub.unsubscribe();
   }
 }

@@ -3,6 +3,9 @@ import { map, Subject } from 'rxjs';
 import { Article } from './article.model';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../environments/environment';
+
+const BACKEND_URL = environment.apiUrl + '/articles';
 
 @Injectable({ providedIn: 'root' })
 export class ArticlesService {
@@ -19,7 +22,7 @@ export class ArticlesService {
     const queryParams = `?pagesize=${articlesPerPage}&page=${currentPage}`;
     this.http
       .get<{ message: string; articles: any; maxArticles: number }>(
-        'http://localhost:3000/api/articles' + queryParams
+        BACKEND_URL + queryParams
       )
       .pipe(
         map((articleData) => {
@@ -61,10 +64,7 @@ export class ArticlesService {
     articleData.append('image', image, title);
 
     this.http
-      .post<{ message: string; article: Article }>(
-        'http://localhost:3000/api/articles',
-        articleData
-      )
+      .post<{ message: string; article: Article }>(BACKEND_URL, articleData)
       .subscribe((responseData) => {
         this.router.navigate(['/']);
       });
@@ -80,7 +80,7 @@ export class ArticlesService {
       creator: string;
       createdAt: Date;
       updatedAt: Date;
-    }>('http://localhost:3000/api/articles/' + id);
+    }>(BACKEND_URL + '/' + id);
   }
 
   updateArticle(
@@ -121,6 +121,6 @@ export class ArticlesService {
   }
 
   deleteArticle(articleId: string) {
-    return this.http.delete('http://localhost:3000/api/articles/' + articleId);
+    return this.http.delete(BACKEND_URL + '/' + articleId);
   }
 }

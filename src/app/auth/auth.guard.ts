@@ -20,7 +20,7 @@ export class AuthGuard {
     if (isAuth) {
       return true;
     } else {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/auth/login']);
     }
 
     return isAuth;

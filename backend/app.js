@@ -12,7 +12,7 @@ const userRoutes = require("./routes/user");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use("/images", express.static(path.join("backend/images")));
+app.use("/images", express.static(path.join("images")));
 
 mongoose
   .connect(

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subject, of } from 'rxjs';
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environment.prod';
 import { AuthData } from './auth-data.model';
 
 const BACKEND_URL = environment.apiUrl + '/user';

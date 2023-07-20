@@ -3,7 +3,7 @@ import { map, Subject } from 'rxjs';
 import { Article } from './article.model';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environment.prod';
 
 const BACKEND_URL = environment.apiUrl + '/articles';
 
@@ -113,11 +113,9 @@ export class ArticlesService {
       };
     }
 
-    this.http
-      .put('http://localhost:3000/api/articles/' + id, articleData)
-      .subscribe((response) => {
-        this.router.navigate(['/']);
-      });
+    this.http.put(BACKEND_URL + '/' + id, articleData).subscribe((response) => {
+      this.router.navigate(['/']);
+    });
   }
 
   deleteArticle(articleId: string) {
